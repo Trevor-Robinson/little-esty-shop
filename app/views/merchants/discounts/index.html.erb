@@ -1,0 +1,6 @@
+<h1><%= @merchant.name %></h1>
+<ul>
+  <% @merchant.discounts.each do |discount| %>
+    <li><%= link_to "#{discount.percentage}% off of #{discount.quantity}", merchant_discount_path(@merchant.id, discount.id) %></li>
+  <% end %>
+</ul>
