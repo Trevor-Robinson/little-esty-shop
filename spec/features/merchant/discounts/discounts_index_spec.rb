@@ -5,6 +5,7 @@ RSpec.describe "When I visit '/merchant/merchant_id/dashboard'" do
     @merchant1 = create(:merchant)
 
     @discount1 = create(:discount, quantity: 10, percentage: 15, merchant_id: @merchant1.id)
+    @discount2 = create(:discount, quantity: 20, percentage: 30, merchant_id: @merchant1.id)
 
     @item = create(:item, merchant_id: @merchant1.id)
     @item2 = create(:item, merchant_id: @merchant1.id)
@@ -26,10 +27,74 @@ RSpec.describe "When I visit '/merchant/merchant_id/dashboard'" do
     @invoice_item6 = create(:invoice_item_with_invoices, item_id: @item6.id, status: 2)
   end
 
-  it 'shows all discounts for the merchant' do
-    visit merchant_discounts_path(@merchant1)
+  it 'shows all discounts for the merchant as links' do
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_discounts_path(@merchant1)
 
-    expect(page).to have_content(@discount1.quantity)
-    expect(page).to have_content(@discount1.percentage)
+      expect(page).to have_content(@discount1.quantity)
+      expect(page).to have_content(@discount1.percentage)
+      expect(page).to have_link("#{@discount1.percentage}% off of #{@discount1.quantity}")
+      expect(page).to have_link("#{@discount2.percentage}% off of #{@discount2.quantity}")
+    end
+  end
+
+  it "can click discount link to go to discount show page" do
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_discounts_path(@merchant1)
+      click_link("#{@discount1.percentage}% off of #{@discount1.quantity}")
+      expect(current_path).to eq(merchant_discount_path(@merchant1, @discount1))
+    end
+  end
+
+  it 'shows the next three upcoming us holidays' do
+    VCR.use_cassette('nager_service_content') do
+      service = NagerService.new
+      holidays = service.holiday_list
+      visit merchant_discounts_path(@merchant1)
+      expect(page).to have_content(holidays[0].date)
+      expect(page).to have_content(holidays[1].date)
+      expect(page).to have_content(holidays[2].date)
+      expect(page).to have_content(holidays[0].name)
+      expect(page).to have_content(holidays[1].name)
+      expect(page).to have_content(holidays[2].name)
+    end
+  end
+
+  it 'has a link to create new discount' do
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_discounts_path(@merchant1)
+
+      expect(page).to have_link("New Bulk Discount")
+    end
+  end
+
+  it 'has delete button for each discount' do
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_discounts_path(@merchant1)
+
+      within("#discount-#{@discount1.id}") do
+        expect(page).to have_link("Delete")
+      end
+      within("#discount-#{@discount2.id}") do
+        expect(page).to have_link("Delete")
+      end
+    end
+  end
+  it 'deletes discount when delete is clicked' do
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_discounts_path(@merchant1)
+
+      expect(page).to have_link("#{@discount1.percentage}% off of #{@discount1.quantity}")
+      expect(page).to have_link("#{@discount2.percentage}% off of #{@discount2.quantity}")
+
+      within("#discount-#{@discount1.id}") do
+        click_link("Delete")
+      end
+      within("#discount-#{@discount2.id}") do
+        expect(page).to have_link("Delete")
+      end
+      expect(page).to_not have_link("#{@discount1.percentage}% off of #{@discount1.quantity}")
+      expect(page).to have_link("#{@discount2.percentage}% off of #{@discount2.quantity}")
+    end
   end
 end
