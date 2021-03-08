@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "When I visit '/merchant/merchant_id/dashboard'" do
+RSpec.describe "When I visit '/merchant/merchant_id/discount/new'" do
   before :each do
     @merchant1 = create(:merchant)
   end
@@ -18,7 +18,6 @@ RSpec.describe "When I visit '/merchant/merchant_id/dashboard'" do
   end
   it "won't create bulk discount without percentage and quantity" do
     visit new_merchant_discount_path(@merchant1)
-    
     fill_in 'percentage', with: ''
     fill_in 'quantity', with: 20
     click_button "Create Bulk Discount"

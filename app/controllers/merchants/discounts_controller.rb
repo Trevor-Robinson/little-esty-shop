@@ -23,6 +23,19 @@ class Merchants::DiscountsController < ApplicationController
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @discount.update(discount_params)
+      flash[:notice] = "Item Succesfully Updated"
+      redirect_to merchant_discount_path(@discount.merchant, @discount)
+    else
+      flash[:notice] = "Required Information Missing"
+      redirect_to edit_merchant_discount_path(@discount.merchant, @discount)
+    end
+  end
+
   def destroy
     Discount.destroy(params[:id])
     redirect_to merchant_discounts_path(params[:merchant_id])
