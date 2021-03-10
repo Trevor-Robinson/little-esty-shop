@@ -9,7 +9,7 @@
 
 ## Core Database Relationships
 
-<img width="1006" alt="m2-esty-shop-schema" src="https://user-images.githubusercontent.com/64031242/109900028-f2a59600-7c53-11eb-87bb-b581ed18979f.png">
+<img width="984" alt="Screen Shot 2021-03-10 at 7 49 59 AM" src="https://user-images.githubusercontent.com/72584659/110648783-42192400-8176-11eb-8aae-a1d1a31f5314.png">
 
 
 ## CSV Tasks
