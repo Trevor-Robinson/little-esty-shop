@@ -16,13 +16,16 @@ RSpec.describe 'the admin invoice show page' do
 
     @invoice1 = create(:invoice, status: 1, created_at: "2013-03-25 09:54:09 UTC", customer_id: @customer1.id)
 
-    @invoice_item1 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item1.id, status: 1, quantity: 6, unit_price: 101)
-    @invoice_item2 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item2.id, status: 2, quantity: 5, unit_price: 102)
-    @invoice_item3 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item3.id, status: 2, quantity: 4, unit_price: 103)
-    @invoice_item4 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item4.id, status: 0, quantity: 3, unit_price: 104)
-    @invoice_item5 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item5.id, status: 2, quantity: 2, unit_price: 105)
-    @invoice_item6 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item6.id, status: 1, quantity: 1, unit_price: 106)
-    @invoice_item7 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item7.id, status: 2, quantity: 1, unit_price: 107)
+    @discount1 = create(:discount, quantity: 4, percentage: 15, merchant_id: @merchant1.id)
+    @discount2 = create(:discount, quantity: 6, percentage: 30, merchant_id: @merchant1.id)
+
+    @invoice_item1 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item1.id, status: 1, quantity: 6, unit_price: 100)
+    @invoice_item2 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item2.id, status: 2, quantity: 5, unit_price: 100)
+    @invoice_item3 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item3.id, status: 2, quantity: 4, unit_price: 100)
+    @invoice_item4 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item4.id, status: 0, quantity: 3, unit_price: 100)
+    @invoice_item5 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item5.id, status: 2, quantity: 2, unit_price: 100)
+    @invoice_item6 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item6.id, status: 1, quantity: 1, unit_price: 100)
+    @invoice_item7 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item7.id, status: 2, quantity: 1, unit_price: 100)
   end
   it "displays id status created at" do
     visit admin_invoice_path(@invoice1)
@@ -72,7 +75,7 @@ RSpec.describe 'the admin invoice show page' do
   end
   it "displays total invoice revenue" do
     visit admin_invoice_path(@invoice1)
-    expect(page).to have_content("Total Invoice Revenue: $2263")
+    expect(page).to have_content("Final Revenue: $1885")
   end
 
   it "displays item status in dropdown" do
@@ -83,5 +86,14 @@ RSpec.describe 'the admin invoice show page' do
     click_button("Update Invoice Status")
     expect(current_path).to eq(admin_invoice_path(@invoice1))
     expect(page).to have_select("invoice_status", selected: "completed")
+  end
+  it "shows the total taken off by discounts" do
+    visit merchant_invoice_path( @merchant1.id, @invoice1.id)
+    expect(page).to have_content("Total Discounts: $315")
+  end
+  it "shows revenue before discounts" do
+    visit merchant_invoice_path(@merchant1.id, @invoice1.id)
+
+    expect(page).to have_content("Revenue Before Discounts: $2200")
   end
 end

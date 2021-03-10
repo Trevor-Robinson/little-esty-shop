@@ -7,6 +7,7 @@ class Item < ApplicationRecord
   has_many :invoices, through: :invoice_items
   has_many :customers, through: :invoices
   has_many :transactions, through: :invoices
+  has_many :discounts, through: :merchant 
 
   def top_selling_date
     sales_by_day = invoices.joins(:invoice_items)

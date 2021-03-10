@@ -44,6 +44,7 @@ RSpec.describe Invoice, type: :model do
   describe 'instance methods' do
     before :each do
       @merchant1 = create(:merchant)
+      @merchant2 = create(:merchant)
 
       @customer1 = create(:customer)
 
@@ -52,10 +53,14 @@ RSpec.describe Invoice, type: :model do
       @item3 = create(:item, merchant_id: @merchant1.id)
       @item4 = create(:item, merchant_id: @merchant1.id)
       @item5 = create(:item, merchant_id: @merchant1.id)
-      @item6 = create(:item, merchant_id: @merchant1.id)
-      @item7 = create(:item, merchant_id: @merchant1.id)
+      @item6 = create(:item, merchant_id: @merchant1.id, name: "Expect Me")
+      @item7 = create(:item, merchant_id: @merchant2.id)
 
       @invoice1 = create(:invoice, created_at: "2013-03-25 09:54:09 UTC", customer_id: @customer1.id)
+      @invoice2 = create(:invoice, customer_id: @customer1.id)
+
+      @discount1 = create(:discount, quantity: 4, percentage: 15, merchant_id: @merchant1.id)
+      @discount2 = create(:discount, quantity: 6, percentage: 30, merchant_id: @merchant1.id)
 
       @invoice_item1 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item1.id, status: 1, quantity: 6, unit_price: 100)
       @invoice_item2 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item2.id, status: 2, quantity: 5, unit_price: 100)
@@ -64,9 +69,24 @@ RSpec.describe Invoice, type: :model do
       @invoice_item5 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item5.id, status: 2, quantity: 2, unit_price: 100)
       @invoice_item6 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item6.id, status: 1, quantity: 1, unit_price: 100)
       @invoice_item7 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item7.id, status: 2, quantity: 1, unit_price: 100)
+      @invoice_item8 = create(:invoice_item, invoice_id: @invoice2.id, item_id: @item6.id, status: 2, quantity: 1, unit_price: 100)
+      @invoice_item9 = create(:invoice_item, invoice_id: @invoice2.id, item_id: @item6.id, status: 2, quantity: 1, unit_price: 100)
     end
     it "#total_revenue" do
       expect(@invoice1.total_revenue).to eq(2200)
+    end
+    it "#discount_items" do
+      expect(@invoice1.discount_items).to eq([@invoice_item1, @invoice_item1, @invoice_item2, @invoice_item3])
+    end
+    it "#discount_amounts" do
+      expect(@invoice1.discount_amounts.first.discount_amount.to_i).to eq(180)
+      expect(@invoice1.discount_amounts.last.discount_amount.to_i).to eq(60)
+    end
+    it "#total_discount" do
+      expect(@invoice1.total_discount).to eq(315)
+    end
+    it "#final_revenue" do
+      expect(@invoice1.final_revenue).to eq(1885)
     end
   end
 end

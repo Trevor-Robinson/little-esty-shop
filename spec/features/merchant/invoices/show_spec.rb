@@ -16,6 +16,10 @@ RSpec.describe 'the merchant invoice index page' do
     @item7 = create(:item, merchant_id: @merchant2.id)
 
     @invoice1 = create(:invoice, created_at: "2013-03-25 09:54:09 UTC", customer_id: @customer1.id)
+    @invoice2 = create(:invoice, customer_id: @customer1.id)
+
+    @discount1 = create(:discount, quantity: 4, percentage: 15, merchant_id: @merchant1.id)
+    @discount2 = create(:discount, quantity: 6, percentage: 30, merchant_id: @merchant1.id)
 
     @invoice_item1 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item1.id, status: 1, quantity: 6, unit_price: 100)
     @invoice_item2 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item2.id, status: 2, quantity: 5, unit_price: 100)
@@ -24,6 +28,8 @@ RSpec.describe 'the merchant invoice index page' do
     @invoice_item5 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item5.id, status: 2, quantity: 2, unit_price: 100)
     @invoice_item6 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item6.id, status: 1, quantity: 1, unit_price: 100)
     @invoice_item7 = create(:invoice_item, invoice_id: @invoice1.id, item_id: @item7.id, status: 2, quantity: 1, unit_price: 100)
+    @invoice_item8 = create(:invoice_item, invoice_id: @invoice2.id, item_id: @item6.id, status: 2, quantity: 1, unit_price: 100)
+    @invoice_item9 = create(:invoice_item, invoice_id: @invoice2.id, item_id: @item6.id, status: 2, quantity: 1, unit_price: 100)
   end
 
   it " shows id, status and created at" do
@@ -55,14 +61,12 @@ RSpec.describe 'the merchant invoice index page' do
       expect(page).to have_content(@invoice_item6.quantity)
       expect(page).to have_content(@invoice_item6.status)
     end
-
-    expect(page).not_to have_content(@item7.name)
   end
 
-  it "shows total revenue for all items on the invoice" do
+  it "shows revenue before discounts" do
     visit merchant_invoice_path(@merchant1.id, @invoice1.id)
 
-    expect(page).to have_content("Total Revenue: $2100")
+    expect(page).to have_content("Revenue Before Discounts: $2200")
   end
 
   it 'shows update item status select field and update button' do
@@ -86,5 +90,26 @@ RSpec.describe 'the merchant invoice index page' do
     end
 
     expect(current_path).to eq(merchant_invoice_path(@merchant1.id, @invoice1.id))
+  end
+  it 'shows any bulk discount being applied to each item' do
+    visit merchant_invoice_path( @merchant1.id, @invoice1.id)
+
+    within("#invoice_item-#{@invoice_item1.id}") do
+      expect(page).to have_content("#{@discount2.percentage}% off")
+    end
+    within("#invoice_item-#{@invoice_item2.id}") do
+      expect(page).to have_content("#{@discount1.percentage}% off")
+    end
+    within("#invoice_item-#{@invoice_item3.id}") do
+      expect(page).to have_content("#{@discount1.percentage}% off")
+    end
+  end
+  it "shows the total taken off by discounts" do
+    visit merchant_invoice_path( @merchant1.id, @invoice1.id)
+    expect(page).to have_content("Total Discounts: $315")
+  end
+  it "shows the final revenue after taking off discounts" do
+    visit merchant_invoice_path( @merchant1.id, @invoice1.id)
+    expect(page).to have_content("Final Revenue: $1885")
   end
 end

@@ -31,8 +31,10 @@ RSpec.describe "When I visit '/merchant/merchant_id/dashboard'" do
   end
 
   it "can click link to go to merchant's bulk discount index" do
-    visit merchant_dashboard_index_path(@merchant1)
-    click_link("#{@merchant1.name}'s Discounts Index")
-    expect(current_path).to eq(merchant_discounts_path(@merchant1))
+    VCR.use_cassette('nager_service_content') do
+      visit merchant_dashboard_index_path(@merchant1)
+      click_link("#{@merchant1.name}'s Discounts Index")
+      expect(current_path).to eq(merchant_discounts_path(@merchant1))
+    end  
   end
 end
